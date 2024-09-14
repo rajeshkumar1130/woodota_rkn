@@ -8,7 +8,7 @@ RUN mkdir -m777 /app
 COPY requirements.txt /app/requirements.txt
 
 RUN pip3 install -r /app/requirements.txt
-
+RUN pip install debugpy
 WORKDIR /app
 
 COPY . /app

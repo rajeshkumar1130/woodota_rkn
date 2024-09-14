@@ -6,11 +6,13 @@ services:
     hostname: dota_redis
 
   clarity:
-    image: arch1baald/clarity:${OS_PLATFORM}
+    image: rkn1130/dota_parser:latest
     # image: arch1baald/clarity:${OS_PLATFORM:-linux}
-    container_name: dota_clarity
+    container_name: dota_parser
     ports:
       - "5600:5600"
+      - "5005:5005"
+
 
   api:
     build: .
@@ -18,9 +20,10 @@ services:
     env_file: .env
     environment:
       - REDIS_URL=redis://dota_redis
-      - CLARITY_HOST=dota_clarity
+      - CLARITY_HOST=dota_parser
     ports:
       - "8000:8000"
+      - "5678:5678"
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts
@@ -34,7 +37,7 @@ services:
     env_file: .env
     environment:
       - REDIS_URL=redis://dota_redis
-      - CLARITY_HOST=dota_clarity
+      - CLARITY_HOST=dota_parser
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts

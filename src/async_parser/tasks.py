@@ -48,9 +48,12 @@ class ClarityParserException(Exception):
 def parse(dem_path: str, remove_dem: bool = False) -> str:
     jsonlines_path = dem_path.replace('.dem', '.jsonlines')
 
-    logger.info(f'Parsing {jsonlines_path}...')
-    cmd = f'curl {CLARITY_HOST}:{CLARITY_PORT} --data-binary "@{dem_path}" > {jsonlines_path}'
-    subprocess.run(cmd, shell=True)
+    if not os.path.exists(jsonlines_path):
+        logger.info(f'Parsing {jsonlines_path}...')
+        cmd = f'curl {CLARITY_HOST}:{CLARITY_PORT} --data-binary "@{dem_path}" > {jsonlines_path}'
+        subprocess.run(cmd, shell=True)
+    else:
+        logger.info(f'jsonlines file already exists: {jsonlines_path}...')
 
     if os.path.getsize(jsonlines_path) == 0:
         os.remove(jsonlines_path)
@@ -59,13 +62,20 @@ def parse(dem_path: str, remove_dem: bool = False) -> str:
 
     if os.path.exists(dem_path) and remove_dem:
         logger.info(f'Removing temporary file {dem_path}...')
-        os.remove(dem_path)
+        """os.remove(dem_path)"""
     return jsonlines_path
 
 
 def download_parse_save(url: str) -> Any:
     res = chain(download_save.s(url), parse.s(True))()
     return res
+
+def download_parse_save1(url: str) -> Any:
+    path = download_save(url)
+    res = parse(path, True)
+    return res
+
+
 
 
 def parse_from_file():
