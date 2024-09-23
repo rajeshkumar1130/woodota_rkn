@@ -65,11 +65,11 @@ class TimeTable(pd.DataFrame):
 
     def t(self, start_time: int = None, end_time: int = None) -> pd.DataFrame:
         if start_time is not None and end_time is not None:
-            df = self[(self['time'] >= start_time) & (self['time'] <= end_time)]
+            df = self[(self['ticks'] >= start_time) & (self['ticks'] <= end_time)]
         elif start_time is not None and end_time is None:
-            df = self[(self['time'] >= start_time)]
+            df = self[(self['ticks'] >= start_time)]
         elif end_time is not None and start_time is None:
-            df = self[(self['time'] <= end_time)]
+            df = self[(self['ticks'] <= end_time)]
         else:
             df = self
         return TimeTable(df)

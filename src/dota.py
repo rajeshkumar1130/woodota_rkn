@@ -206,7 +206,7 @@ class MatchPlayer:
         for e in self.events:
             try:
                 if e['type'] == 'interval' and e.get('unit', 'unknown_unit') == self.unit:
-                    time.append(e['time'])
+                    time.append(e['ticks'])
                     health.append(e['hp'])
             except Exception as e:
                 logger.error(e)
