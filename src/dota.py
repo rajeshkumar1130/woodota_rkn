@@ -150,6 +150,29 @@ class Match:
             moment['clock_start'] = convert_to_dota_clock_format(moment['start'])
             moment['clock_end'] = convert_to_dota_clock_format(moment['end'])
         return moments
+    
+    def single_player_action_moments(self, hero_name: str) -> TimeTable:
+        moments = []
+        for player in self.players:
+            if player.hero_name == hero_name:
+                moments.append(player.action_moments)
+        df_moments = pd.concat(moments)
+        moments = df_moments[['start', 'end']].to_dict('records')
+        moments = merge_close_intervals(moments, 10)
+        df_moments = TimeTable(moments)
+        df_moments['time'] = df_moments['start']
+        return df_moments
+    
+    def get_single_player_action_moments(self, hero_name: str) -> List[Dict]:
+        """Time intervals in Dota 2 time format where the player escaped attack on it or participated in a kill"""
+        moments = self.single_player_action_moments(hero_name)
+        moments = moments[['start', 'end']]
+        moments = moments.to_dict('records')
+
+        for moment in moments:
+            moment['clock_start'] = convert_to_dota_clock_format(moment['start'])
+            moment['clock_end'] = convert_to_dota_clock_format(moment['end'])
+        return moments
 
 
 class MatchPlayer:
@@ -297,7 +320,9 @@ class MatchPlayer:
         df_attacks = self.as_attacker
         if not df_attacks.empty:
             df_attacks = df_attacks[df_attacks['target_dead']]
-        df_moments = pd.concat([df_escapes, df_attacks])
+        """"df_moments = pd.concat([df_escapes, df_attacks])"""
+        df_moments = df_attacks
+
         if df_moments.empty:
             return TimeTable([])
 
@@ -438,4 +463,6 @@ class UnitToName(str, Enum):
     CDOTA_Unit_Hero_WitchDoctor = 'npc_dota_hero_witch_doctor'
     CDOTA_Unit_Hero_Zuus = 'npc_dota_hero_zuus'
     CDOTA_Unit_Hero_Muerta = 'npc_dota_hero_muerta'
+    CDOTA_Unit_Hero_Ringmaster = 'npc_dota_hero_ringmaster'
+
 

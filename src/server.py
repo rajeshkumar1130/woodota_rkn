@@ -1,3 +1,4 @@
+import os
 import requests
 from flask import Flask, Response, request, jsonify
 from loguru import logger
@@ -7,12 +8,12 @@ from async_parser.tasks import download_parse_save1
 
 from async_parser.celery import app as celery_app
 from dota import Match, NotParsedError
+from settings import REPLAY_DIR
 """import easyocr
 import io
 from PIL import Image"""
 
 app = Flask(__name__)
-"""reader = easyocr.Reader(['en'])"""
 
 @app.route('/')
 def index() -> str:
@@ -208,24 +209,64 @@ def get_highlights1(match_id: int) -> Response:
         data=action_moments,
     ))
 
+@app.route('/getSinglePlayerHighlights', methods=['GET'])
+def getSinglePlayerHighlights() -> Response:
+    
+    match_id = request.args.get('match_id')
+    hero_Name = request.args.get('hero_name')
+
+    logger.info(f'{match_id=}')
+    logger.info(f'{hero_Name=}')
+
+
+    url = retrive1(match_id)
+    
+    logger.info(f'{url}')
+
+    job_id = parse1(url)
+
+    logger.info(f'{job_id}')
+
+    try:
+        match_id = int(match_id)
+    except ValueError:
+        return jsonify(dict(
+            success=False,
+            error='Match ID is not a number'
+        )), 400
+
+    try:
+        match = Match.from_id(match_id)
+        match.parse()
+    except NotParsedError as err:
+        return jsonify(dict(
+            success=False,
+            error=str(err)
+        )), 404
+
+    action_moments = match.get_single_player_action_moments(hero_Name)
+    return jsonify(dict(
+        success=True,
+        data=action_moments,
+    ))
+
 """@app.route('/ocr', methods=['POST'])
 def ocr():
-    # Ensure the request has a file
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
 
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    file_path = os.path.join(REPLAY_DIR, file.filename)
+    file.save(file_path)
 
-    # Read the image file
-    image_bytes = file.read()
-    image = Image.open(io.BytesIO(image_bytes))
+    try:
+        results = reader.readtext(file_path)
+        output = [{'text': result[1], 'confidence': result[2]} for result in results]
+        return jsonify(output)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    # Perform OCR
-    results = reader.readtext(image)
-    
-    # Format the results
-    output = [{'text': result[1], 'confidence': result[2]} for result in results]
+if __name__ == '__main__':
+    app.run(debug=True)"""
 
-    return jsonify(output)"""
+

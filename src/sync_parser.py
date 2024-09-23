@@ -33,7 +33,7 @@ def download_save(url: str) -> str:
 def download_parse_save(url: str) -> str:
     dem_path = download_save(url)
     jsonlines_path = dem_path.replace('.dem', '.jsonlines')
-    cmd = f'curl https://dotapaser2.azurewebsites.net:5600 --data-binary "@{dem_path}" > {jsonlines_path}'
+    cmd = f'curl localhost:5600 --data-binary "@{dem_path}" > {jsonlines_path}'
     subprocess.run(cmd, shell=True)
     return jsonlines_path
 

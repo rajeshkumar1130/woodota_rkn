@@ -6,7 +6,7 @@ services:
     hostname: dota_redis
 
   clarity:
-    image: rkn1130/dota_parser:latest
+    image: dota_parser:latest
     # image: arch1baald/clarity:${OS_PLATFORM:-linux}
     container_name: dota_parser
     ports:
