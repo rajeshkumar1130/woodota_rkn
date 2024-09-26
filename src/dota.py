@@ -158,7 +158,7 @@ class Match:
                 moments.append(player.action_moments)
         df_moments = pd.concat(moments)
         moments = df_moments[['start', 'end']].to_dict('records')
-        moments = merge_close_intervals(moments, 10)
+        moments = merge_close_intervals(moments, 210)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
         return df_moments

@@ -60,8 +60,8 @@ class TimeSeries(pd.Series):
 class TimeTable(pd.DataFrame):
     def __init__(self, *args: Tuple, **kwargs: Dict):
         super().__init__(*args, **kwargs)
-        if 'time' not in self.columns:
-            self['time'] = np.nan
+        if 'ticks' not in self.columns:
+            self['ticks'] = np.nan
 
     def t(self, start_time: int = None, end_time: int = None) -> pd.DataFrame:
         if start_time is not None and end_time is not None:
