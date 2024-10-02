@@ -65,37 +65,7 @@ def retrive(match_id: int) -> Response:
         url=url
     ))
 
-def retrive1(match_id: int) -> str:
-    logger.info(f'{match_id=}')
-    try:
-        match_id = int(match_id)
-    except ValueError:
-        return 'Error:' + 'Match ID is not a number'
 
-    r = requests.get(
-        'https://api.opendota.com/api/matches/'+ str(match_id)
-    )
-    try:
-        r.raise_for_status()
-        if not r.json():
-            raise Exception(f'Replay not found for the Match ID: {match_id}')
-    except Exception as err:
-        return 'Error:' + str(err)
-
-    replay = r.json()
-    cluster = replay['cluster']
-    match_id = replay['match_id']
-    replay_salt = replay['replay_salt']
-    url = f'http://replay{cluster}.valve.net/570/{match_id}_{replay_salt}.dem.bz2'
-    logger.info(url)
-
-    r = requests.head(url)
-    try:
-        r.raise_for_status()
-    except Exception as err:
-        return 'Error:' + str(err)
-
-    return url
 
 
 @app.route('/parse')
@@ -120,17 +90,12 @@ def parse() -> Response:
         job_id=async_result.id
     ))
 
-def parse1(url: str) -> str:
+def parse1(match_id: str) -> str:
     """
     Example: http://localhost:8000/parse?url=http://replay191.valve.net/570/6216665747_89886887.dem.bz2
     """
-    dem_url = url
-    logger.info(f'{dem_url=}')
-    if dem_url is None:
-        return 'Error:' + 'Demo URL not found'
-    dem_url = dem_url.strip()
 
-    async_result = download_parse_save1(dem_url)
+    async_result = download_parse_save1(match_id)
     logger.info(f'{async_result}')
     return async_result
 
@@ -178,11 +143,7 @@ def get_highlights1(match_id: int) -> Response:
     """
     logger.info(f'{match_id=}')
 
-    url = retrive1(match_id)
-    
-    logger.info(f'{url}')
-
-    job_id = parse1(url)
+    job_id = parse1(match_id)
 
     logger.info(f'{job_id}')
 
@@ -218,12 +179,7 @@ def getSinglePlayerHighlights() -> Response:
     logger.info(f'{match_id=}')
     logger.info(f'{hero_Name=}')
 
-
-    url = retrive1(match_id)
-    
-    logger.info(f'{url}')
-
-    job_id = parse1(url)
+    job_id = parse1(match_id)
 
     logger.info(f'{job_id}')
 

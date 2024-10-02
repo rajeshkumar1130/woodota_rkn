@@ -155,10 +155,10 @@ class Match:
         moments = []
         for player in self.players:
             if player.hero_name == hero_name:
-                moments.append(player.action_moments)
+                moments.append(player.single_player_action_moments)
         df_moments = pd.concat(moments)
         moments = df_moments[['start', 'end']].to_dict('records')
-        moments = merge_close_intervals(moments, 210)
+        moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
         return df_moments
@@ -322,6 +322,27 @@ class MatchPlayer:
             df_attacks = df_attacks[df_attacks['target_dead']]
         """"df_moments = pd.concat([df_escapes, df_attacks])"""
         df_moments = df_attacks
+
+        if df_moments.empty:
+            return TimeTable([])
+
+        moments = df_moments[['start', 'end']].to_dict('records')
+        moments = merge_close_intervals(moments, MERGE_GAP)
+        df_moments = TimeTable(moments)
+        df_moments['time'] = df_moments['start']
+        return df_moments
+    
+    @cached_property
+    def single_player_action_moments(self) -> TimeTable:
+        """Time intervals where the player escaped attack on it or participated in a kill"""
+        df_escapes = self.as_target
+        if not df_escapes.empty:
+            df_escapes = df_escapes[(~df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+        df_attacks = self.as_attacker
+        if not df_attacks.empty:
+            df_attacks = df_attacks[df_attacks['target_dead']]
+        df_moments = pd.concat([df_escapes, df_attacks])
+        #df_moments = df_attacks
 
         if df_moments.empty:
             return TimeTable([])
