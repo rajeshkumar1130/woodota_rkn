@@ -15,5 +15,5 @@ else
     FLASK_ENV=$FLASK_ENV \
     LOGURU_LEVEL=INFO \
     gunicorn --timeout 3600 -w $WORKERS --chdir $(pwd)/src "server:app" -b 0.0.0.0:8000
-    #python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m gunicorn --timeout 3600 -w $WORKERS --chdir $(pwd)/src "server:app" -b 0.0.0.0:8000
+    python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m gunicorn --timeout 3600 -w $WORKERS --chdir $(pwd)/src "server:app" -b 0.0.0.0:8000
 fi

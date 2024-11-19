@@ -135,7 +135,9 @@ class Match:
             moments.append(player.action_moments)
         df_moments = pd.concat(moments)
         moments = df_moments[['start', 'end', 'slot']].to_dict('records')
-        moments = merge_close_intervals(moments, MERGE_GAP)
+        moments = sorted(moments, key=lambda dct: (dct['start'], dct['end']))
+
+        #moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
         return df_moments
@@ -347,17 +349,20 @@ class MatchPlayer:
         """Time intervals where the player escaped attack on it or participated in a kill"""
         df_escapes = self.as_target
         if not df_escapes.empty:
-            df_escapes = df_escapes[(~df_escapes['target_dead']) & df_escapes['attacker_heroes']]
-        df_attacks = self.as_attacker
+            df_escapes = df_escapes[(df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+        """df_attacks = self.as_attacker
         if not df_attacks.empty:
             df_attacks = df_attacks[df_attacks['target_dead']]
         """"df_moments = pd.concat([df_escapes, df_attacks])"""
-        df_moments = df_attacks
+        df_moments = df_escapes
 
         if df_moments.empty:
             return TimeTable([])
 
         df_moments['slot'] = self.slot
+        """for moment in df_moments.iterrows():
+            moment[1]['slot'] =  moment[1]['attacker_heroes'][0].slot"""
+
         moments = df_moments[['start', 'end', 'slot']].to_dict('records')
         moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)

@@ -177,6 +177,7 @@ def get_highlights1() -> Response:
         slot=slot,
     ))
 
+#player chase
 @app.route('/getHighlights2')
 def get_highlights2() -> Response:
     """
