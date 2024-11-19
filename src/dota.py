@@ -134,7 +134,7 @@ class Match:
         for player in self.players:
             moments.append(player.action_moments)
         df_moments = pd.concat(moments)
-        moments = df_moments[['start', 'end']].to_dict('records')
+        moments = df_moments[['start', 'end', 'slot']].to_dict('records')
         moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
@@ -150,11 +150,36 @@ class Match:
             moment['clock_start'] = convert_to_dota_clock_format(moment['start'])
             moment['clock_end'] = convert_to_dota_clock_format(moment['end'])
         return moments
+
+    @cached_property
+    def action_moments2(self) -> TimeTable:
+        moments = []
+        for player in self.players:
+            moments.append(player.action_moments2)
+        df_moments = pd.concat(moments)
+        moments = df_moments[['start', 'end', 'slot']].to_dict('records')
+        #moments = merge_close_intervals(moments, MERGE_GAP)
+        moments = sorted(moments, key=lambda dct: (dct['start'], dct['end']))
+
+        df_moments = TimeTable(moments)
+        df_moments['time'] = df_moments['start']
+        return df_moments
+
+    def get_action_moments2(self) -> List[Dict]:
+        """Time intervals in Dota 2 time format where the player escaped attack on it or participated in a kill"""
+        moments = self.action_moments
+        moments = moments[['start', 'end', 'slot']]
+        moments = moments.to_dict('records')
+
+        for moment in moments:
+            moment['clock_start'] = convert_to_dota_clock_format(moment['start'])
+            moment['clock_end'] = convert_to_dota_clock_format(moment['end'])
+        return moments
     
     def single_player_action_moments(self, hero_name: str) -> TimeTable:
         moments = []
         for player in self.players:
-            if player.hero_name == hero_name:
+            if hero_name in player.hero_name:
                 moments.append(player.single_player_action_moments)
         df_moments = pd.concat(moments)
         moments = df_moments[['start', 'end']].to_dict('records')
@@ -163,6 +188,12 @@ class Match:
         df_moments['time'] = df_moments['start']
         return df_moments
     
+    def get_player_slot(self, hero_name: str) -> TimeTable:
+        moments = []
+        for player in self.players:
+            if hero_name in player.hero_name:
+                return player.slot
+        return 0
     def get_single_player_action_moments(self, hero_name: str) -> List[Dict]:
         """Time intervals in Dota 2 time format where the player escaped attack on it or participated in a kill"""
         moments = self.single_player_action_moments(hero_name)
@@ -326,7 +357,8 @@ class MatchPlayer:
         if df_moments.empty:
             return TimeTable([])
 
-        moments = df_moments[['start', 'end']].to_dict('records')
+        df_moments['slot'] = self.slot
+        moments = df_moments[['start', 'end', 'slot']].to_dict('records')
         moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
@@ -337,7 +369,9 @@ class MatchPlayer:
         """Time intervals where the player escaped attack on it or participated in a kill"""
         df_escapes = self.as_target
         if not df_escapes.empty:
-            df_escapes = df_escapes[(~df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+            df_escapes = df_escapes[(~df_escapes['target_dead'] | df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+            #df_escapes = df_escapes[~df_escapes['target_dead'] & df_escapes['attacker_heroes']]
+
         df_attacks = self.as_attacker
         if not df_attacks.empty:
             df_attacks = df_attacks[df_attacks['target_dead']]
@@ -485,5 +519,7 @@ class UnitToName(str, Enum):
     CDOTA_Unit_Hero_Zuus = 'npc_dota_hero_zuus'
     CDOTA_Unit_Hero_Muerta = 'npc_dota_hero_muerta'
     CDOTA_Unit_Hero_Ringmaster = 'npc_dota_hero_ringmaster'
+    CDOTA_Unit_Hero_Kez = 'npc_dota_hero_kez'
+
 
 

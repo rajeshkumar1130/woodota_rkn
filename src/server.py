@@ -136,11 +136,15 @@ def get_highlights(match_id: int) -> Response:
         data=action_moments,
     ))
 
-@app.route('/getHighlights1/<match_id>')
-def get_highlights1(match_id: int) -> Response:
+@app.route('/getHighlights1')
+def get_highlights1() -> Response:
     """
     Example: http://localhost:8000/getHighlights/6216665747
     """
+
+    match_id = request.args.get('match_id')
+    hero_Name = request.args.get('hero_name')
+
     logger.info(f'{match_id=}')
 
     job_id = parse1(match_id)
@@ -165,9 +169,53 @@ def get_highlights1(match_id: int) -> Response:
         )), 404
 
     action_moments = match.get_action_moments()
+    slot = match.get_player_slot(hero_Name)
+
     return jsonify(dict(
         success=True,
         data=action_moments,
+        slot=slot,
+    ))
+
+@app.route('/getHighlights2')
+def get_highlights2() -> Response:
+    """
+    Example: http://localhost:8000/getHighlights/6216665747
+    """
+
+    match_id = request.args.get('match_id')
+    hero_Name = request.args.get('hero_name')
+
+    logger.info(f'{match_id=}')
+
+    job_id = parse1(match_id)
+
+    logger.info(f'{job_id}')
+
+    try:
+        match_id = int(match_id)
+    except ValueError:
+        return jsonify(dict(
+            success=False,
+            error='Match ID is not a number'
+        )), 400
+
+    try:
+        match = Match.from_id(match_id)
+        match.parse()
+    except NotParsedError as err:
+        return jsonify(dict(
+            success=False,
+            error=str(err)
+        )), 404
+
+    action_moments = match.get_action_moments2()
+    slot = match.get_player_slot(hero_Name)
+
+    return jsonify(dict(
+        success=True,
+        data=action_moments,
+        slot=slot,
     ))
 
 @app.route('/getSinglePlayerHighlights', methods=['GET'])
@@ -201,9 +249,48 @@ def getSinglePlayerHighlights() -> Response:
         )), 404
 
     action_moments = match.get_single_player_action_moments(hero_Name)
+    slot = match.get_player_slot(hero_Name)
+
     return jsonify(dict(
         success=True,
         data=action_moments,
+        slot=slot,
+    ))
+
+@app.route('/getPlayerSlot', methods=['GET'])
+def getPlayerSlot() -> Response:
+    
+    match_id = request.args.get('match_id')
+    hero_Name = request.args.get('hero_name')
+
+    logger.info(f'{match_id=}')
+    logger.info(f'{hero_Name=}')
+
+    job_id = parse1(match_id)
+
+    logger.info(f'{job_id}')
+
+    try:
+        match_id = int(match_id)
+    except ValueError:
+        return jsonify(dict(
+            success=False,
+            error='Match ID is not a number'
+        )), 400
+
+    try:
+        match = Match.from_id(match_id)
+        match.parse()
+    except NotParsedError as err:
+        return jsonify(dict(
+            success=False,
+            error=str(err)
+        )), 404
+
+    slot = match.get_player_slot(hero_Name)
+    return jsonify(dict(
+        success=True,
+        data=slot,
     ))
 
 """@app.route('/ocr', methods=['POST'])

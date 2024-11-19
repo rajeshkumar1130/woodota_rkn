@@ -115,10 +115,17 @@ def merge_close_intervals(intervals: List[Dict], gap: int) -> List[Dict]:
     prev = intervals[0]
     for current in intervals[1:]:
         if current['start'] <= (prev['end'] + gap):
-            prev = dict(
-                start=prev['start'],
-                end=max(current['end'], prev['end'])
-            )
+            if 'slot' in current:
+                prev = dict(
+                    start=prev['start'],
+                    end=max(current['end'], prev['end']),
+                    slot = prev['slot']
+                )
+            else:
+                prev = dict(
+                    start=prev['start'],
+                    end=max(current['end'], prev['end'])
+                )
         else:
             merged.append(prev)
             prev = current
