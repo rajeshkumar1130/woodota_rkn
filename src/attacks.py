@@ -50,10 +50,13 @@ def find_attacks(player: 'dota.MatchPlayer') -> List[Dict]:
         df_input_damage = player.hero_damage_in.t(interval['start'], interval['end'])
         attacker_heroes = df_input_damage['sourcename'].unique()
         converted_to_players = []
+        attackers = []
         for hero_name in attacker_heroes:
             hero_player = match.get_player(hero_name)
             converted_to_players.append(hero_player)
+            attackers.append(hero_player.slot)
         interval['attacker_heroes'] = converted_to_players
+        interval['attackers'] = attackers
         interval['start'] -= DHP_SMOOTH_WINDOW
         interval['end'] -= DHP_SMOOTH_WINDOW
     return intervals
