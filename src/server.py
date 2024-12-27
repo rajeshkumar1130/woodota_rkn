@@ -210,6 +210,12 @@ def get_highlights2() -> Response:
         )), 404
 
     action_moments = match.get_action_moments2()
+    zero = [x for x in match.events if x['time']==0][0]['ticks']
+    draft = [x for x in match.events if x['type']=='draft_timings'][-1]['time']*30
+    event = {"start": zero+draft-30, "end": zero+draft+450}
+    #action_moments.insert(0, event)
+    #event = {"start": draft-150, "end": draft+1, "clock_start": "0", "clock_end": "0"}
+
     slot = match.get_player_slot(hero_Name)
 
     return jsonify(dict(
