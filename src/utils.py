@@ -119,7 +119,8 @@ def merge_close_intervals(intervals: List[Dict], gap: int) -> List[Dict]:
                 prev = dict(
                     start=prev['start'],
                     end=max(current['end'], prev['end']),
-                    slot = prev['slot']
+                    slot = prev['slot'],
+                    target_dead = prev['target_dead']
                 )
             else:
                 prev = dict(

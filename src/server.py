@@ -8,7 +8,9 @@ from async_parser.tasks import download_parse_save1
 
 from async_parser.celery import app as celery_app
 from dota import Match, NotParsedError
-from settings import REPLAY_DIR
+from settings import REPLAY_DIR, MAX_HP_THRESHOLD
+import settings
+import importlib
 """import easyocr
 import io
 from PIL import Image"""
@@ -177,6 +179,7 @@ def get_highlights1() -> Response:
         slot=slot,
     ))
 
+#player chase and assited camera
 @app.route('/getHighlights2')
 def get_highlights2() -> Response:
     """
@@ -209,11 +212,14 @@ def get_highlights2() -> Response:
             error=str(err)
         )), 404
 
+    settings.MAX_HP_THRESHOLD = 0.1
+    importlib.reload(settings)
+
     action_moments = match.get_action_moments2()
     zero = [x for x in match.events if x['time']==0][0]['ticks']
     draft = [x for x in match.events if x['type']=='draft_timings'][-1]['time']*30
-    event = {"start": zero+draft-30, "end": zero+draft+450}
-    #action_moments.insert(0, event)
+    event = {"start": zero+draft-180, "end": zero+draft+450}
+    action_moments.insert(0, event)
     #event = {"start": draft-150, "end": draft+1, "clock_start": "0", "clock_end": "0"}
 
     slot = match.get_player_slot(hero_Name)

@@ -157,7 +157,7 @@ class Match:
         for player in self.players:
             moments.append(player.action_moments2)
         df_moments = pd.concat(moments)
-        moments = df_moments[['start', 'end', 'slot', 'attackers']].to_dict('records')
+        moments = df_moments[['start', 'end', 'slot', 'attackers', 'target_dead']].to_dict('records')
         #moments = merge_close_intervals(moments, MERGE_GAP)
         moments = sorted(moments, key=lambda dct: (dct['start'], dct['end']))
 
@@ -168,7 +168,7 @@ class Match:
     def get_action_moments2(self) -> List[Dict]:
         """Time intervals in Dota 2 time format where the player escaped attack on it or participated in a kill"""
         moments = self.action_moments2
-        moments = moments[['start', 'end', 'slot', 'attackers']]
+        moments = moments[['start', 'end', 'slot', 'attackers', 'target_dead']]
         moments = moments.to_dict('records')
 
         for moment in moments:
@@ -369,7 +369,9 @@ class MatchPlayer:
         """Time intervals where the player escaped attack on it or participated in a kill"""
         df_escapes = self.as_target
         if not df_escapes.empty:
-            df_escapes = df_escapes[(df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+            df_escapes = df_escapes[(~df_escapes['target_dead'] | df_escapes['target_dead']) & df_escapes['attacker_heroes']]
+
+            #df_escapes = df_escapes[(df_escapes['target_dead']) & df_escapes['attacker_heroes']]
         """df_attacks = self.as_attacker
         if not df_attacks.empty:
             df_attacks = df_attacks[df_attacks['target_dead']]
@@ -383,7 +385,7 @@ class MatchPlayer:
         """for moment in df_moments.iterrows():
             moment[1]['slot'] =  moment[1]['attacker_heroes'][0].slot"""
 
-        moments = df_moments[['start', 'end', 'slot', 'attackers']].to_dict('records')
+        moments = df_moments[['start', 'end', 'slot', 'attackers', 'target_dead']].to_dict('records')
         moments = merge_close_intervals(moments, MERGE_GAP)
         df_moments = TimeTable(moments)
         df_moments['time'] = df_moments['start']
